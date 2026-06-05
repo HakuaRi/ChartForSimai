@@ -1,0 +1,27 @@
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# 临时目录（压缩包解压缓存）
+.tmp_cache/
+.tmp_cache_maidx/
+
+# 输出图片
+output*.png
+test_*.png
+debug_*.png
+
+# 测试用压缩包
+*.zip
+
+# IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+Thumbs.db
+.DS_Store

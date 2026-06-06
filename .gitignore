@@ -16,6 +16,10 @@ debug_*.png
 # 测试用压缩包
 *.zip
 
+# 备份文件
+* - 副本.*
+
+
 # IDE 配置
 .vscode/
 .idea/

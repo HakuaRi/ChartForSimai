@@ -154,6 +154,8 @@ class SimaiParser:
             text = text[sec_match.end():].strip()
         
         if not text:
+            # 纯元数据组（只含BPM/分音变更，无音符），不应推进节拍
+            self.current_beat -= 1.0 / self.base_div
             return
         
         # Each 组 (/ 分隔)

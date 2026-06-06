@@ -67,7 +67,7 @@ def parse_maidata(text):
         if kv_match:
             # --- 遇到新的 & 行时，先保存上一个 inote 段（无需 E 也能自动结束） ---
             if in_inote and current_inote_lines:
-                chart_text = ','.join(current_inote_lines)
+                chart_text = ''.join(current_inote_lines)
                 chart_text = chart_text.rstrip(',')
                 if current_diff:
                     if current_diff not in result["difficulties"]:
@@ -121,7 +121,7 @@ def parse_maidata(text):
         if in_inote and not line.startswith('&'):
             # 单独的 E 表示结束（显式 E 也走同样保存逻辑，但保留 E 检测不影响）
             if line == 'E':
-                chart_text = ','.join(current_inote_lines)
+                chart_text = ''.join(current_inote_lines)
                 chart_text = chart_text.rstrip(',')
                 if current_diff:
                     if current_diff not in result["difficulties"]:
@@ -135,7 +135,7 @@ def parse_maidata(text):
     
     # 处理文件末尾没有 E 的情况
     if in_inote and current_inote_lines:
-        chart_text = ','.join(current_inote_lines)
+        chart_text = ''.join(current_inote_lines)
         chart_text = chart_text.rstrip(',')
         if current_diff:
             if current_diff not in result["difficulties"]:
@@ -210,11 +210,14 @@ def select_difficulty(parsed):
     selected = diffs[selected_num]
     chart_text = selected.get("chart_text", "")
     first_offset = parsed.get("first", 0.0)
+    diff_lv_value = selected.get("lv", "")
+    base_name = DIFFICULTY_NAMES.get(selected_num, f"难度{selected_num}").split("[")[0].strip()
+    diff_name = f"{base_name} {diff_lv_value}" if diff_lv_value else base_name
     song_info = {
         "title": parsed.get("title", "Unknown"),
         "artist": parsed.get("artist", "Unknown"),
         "designer": selected.get("des", ""),
-        "diff_name": DIFFICULTY_NAMES.get(selected_num, f"难度{selected_num}").split("[")[0].strip(),
+        "diff_name": diff_name,
     }
     diff_lv_name = DIFFICULTY_NAMES.get(selected_num, f"难度{selected_num}")
     

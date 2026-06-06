@@ -91,8 +91,9 @@ class ChartCanvas:
         self.unit_w = 8 * TRACK_WIDTH + 7 * TRACK_PADDING  # = 330
         self.unit_p = int(self.unit_w * UNIT_PADDING_RATIO)
         
-        # 计算画布总宽（右侧留白 MARGIN 即可）
+        # 计算画布总宽（右侧留白 MARGIN 即可），最小 1500px
         self.canvas_w = int(MARGIN + self.total_units * (self.unit_w + self.unit_p) + MARGIN)
+        self.canvas_w = max(self.canvas_w, 1500)
         
         # 创建图片
         self.img = Image.new("RGB", (self.canvas_w, CANVAS_HEIGHT), BG_COLOR)
@@ -372,7 +373,7 @@ class ChartCanvas:
         if designer:
             parts.append(f"Designer: {designer}")
         if diff_name:
-            parts.append(f"Diff: {diff_name}")
+            parts.append(f"Lv: {diff_name}")
         if parts:
             self.draw.text((header_x, MARGIN - 100), " | ".join(parts), fill=(140, 145, 160), font=font_info)
     
@@ -441,16 +442,16 @@ class ChartCanvas:
         self.draw.text((base_x + 240, base_y), f"TOTAL:", fill=STAT_LABEL_COLOR, font=font_stat_label)
         self.draw.text((base_x + 340, base_y - 4), f"{total_notes}", fill=STAT_VALUE_COLOR, font=font_stat_value)
         
-        self.draw.text((base_x + 240, base_y + 40), f"TAP: {tap_count}", fill=TAP_COLOR, font=font_stat_label)
-        self.draw.text((base_x + 380, base_y + 40), f"HOLD: {hold_count}", fill=HOLD_COLOR, font=font_stat_label)
-        self.draw.text((base_x + 530, base_y + 40), f"SLIDE: {slide_star_count}", fill=SLIDE_LINE_COLOR, font=font_stat_label)
-        self.draw.text((base_x + 680, base_y + 40), f"TOUCH: {touch_count}", fill=BPM_COLOR, font=font_stat_label)
-        self.draw.text((base_x + 830, base_y + 40), f"BREAK: {break_count}", fill=(255, 120, 120), font=font_stat_label)
-        self.draw.text((base_x + 1000, base_y + 40), f"EX: {ex_count}", fill=(200, 200, 80), font=font_stat_label)
+        self.draw.text((base_x , base_y + 40), f"TAP: {tap_count}", fill=TAP_COLOR, font=font_stat_label)
+        self.draw.text((base_x + 240, base_y + 40), f"HOLD: {hold_count}", fill=HOLD_COLOR, font=font_stat_label)
+        self.draw.text((base_x + 480, base_y + 40), f"SLIDE: {slide_star_count}", fill=SLIDE_LINE_COLOR, font=font_stat_label)
+        self.draw.text((base_x + 720, base_y + 40), f"TOUCH: {touch_count}", fill=BPM_COLOR, font=font_stat_label)
+        self.draw.text((base_x + 960, base_y + 40), f"BREAK: {break_count}", fill=(255, 120, 120), font=font_stat_label)
+        self.draw.text((base_x + 1200, base_y + 40), f"EX: {ex_count}", fill=(200, 200, 80), font=font_stat_label)
         
         if self.bpm_events:
             first_bpm = self.bpm_events[0]['bpm']
-            self.draw.text((base_x, base_y + 80), f"BPM: {int(first_bpm)}", fill=BPM_COLOR, font=font_stat_value)
+            self.draw.text((base_x, base_y + 80), f"Base_BPM: {int(first_bpm)}", fill=BPM_COLOR, font=font_stat_value)
     
     # ---- 分音标注：相差-映射法（与 init.py 对齐） ----
     
@@ -1234,7 +1235,7 @@ class ChartCanvas:
 
 
 def render_chart(notes, bpm_events, output="output.png", first_offset=0.0, song_info=None, bg_img_path=None):
-    """渲染入口
+    """渲染入口（保存到文件）
     
     Args:
         notes: 音符列表
@@ -1250,3 +1251,29 @@ def render_chart(notes, bpm_events, output="output.png", first_offset=0.0, song_
     img.save(output)
     print(f"✅ 图片生成完成: {output}")
     return output
+
+
+def render_to_bytes(notes, bpm_events, first_offset=0.0, song_info=None, bg_img_path=None):
+    """渲染入口（返回图片字节流，适合聊天机器人等场景）
+    
+    用法示例:
+        img_bytes = render_to_bytes(notes, bpm_events, song_info={...})
+        # 对接聊天机器人 API
+        await bot.send_image(img_bytes)
+    
+    Args:
+        notes: 音符列表
+        bpm_events: BPM 事件列表
+        first_offset: 偏移秒数（&first）
+        song_info: dict {title, artist, designer, diff_name}
+        bg_img_path: 背景图路径（可选）
+    
+    Returns:
+        bytes: PNG 格式的图片字节流
+    """
+    from io import BytesIO
+    canvas = ChartCanvas(notes, bpm_events, first_offset, song_info, bg_img_path)
+    img = canvas.render()
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
